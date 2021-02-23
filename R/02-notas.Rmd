@@ -1,0 +1,34 @@
+---
+title: "02-notas"
+author: "Angel Adrian De la Cruz Castillo"
+date: "23/2/2021"
+output: html_document
+---
+
+## agreggateBioVar
+
+### Jason Ratcliff [aut, cre] , Andrew Thurman [aut], Michael Chimenti [ctb], Alejandro Pezzulo [ctb]
+
+### Description:
+
+For single cell RNA-seq data collected from more than one subject (e.g. biological sample or technical replicates), this package contains tools to summarize single cell gene expression profiles at the level of subject. A SingleCellExperiment object is taken as input and converted to a list of SummarizedExperiment objects, where each list element corresponds to an assigned cell type. The SummarizedExperiment objects contain aggregate gene-by-subject count matrices and inter-subject column metadata for individual subjects that can be processed using downstream bulk RNA-seq tools.
+
+## CellaRepertorium
+
+### Autor: Andrew McDavid [aut, cre], Yu Gu [aut], Erik VonKaenel [aut], Thomas Lin Pedersen [ctb]
+
+### Description: 
+
+Methods to cluster and analyze high-throughput single cell immune cell repertoires, especially from the 10X Genomics VDJ solution. Contains an R interface to CD-HIT (Li and Godzik 2006). Methods to visualize and analyze paired heavy-light chain data. Tests for specific expansion, as well as omnibus oligoclonality under hypergeometric models.
+
+## BiocIO
+
+### Autor: Martin Morgan [aut], Michael Lawrence [aut], Daniel Van Twisk [aut], Bioconductor Package Maintainer [cre]
+
+### Descrpition: 
+
+Implements `import()` and `export()` standard generics for importing and exporting biological data formats. `import()` supports whole-file as well as chunk-wise iterative import. The `import()` interface optionally provides a standard mechanism for 'lazy' access via `filter()` (on row or element-like components of the file resource), `select()` (on column-like components of the file resource) and `collect()`. The `import()` interface optionally provides transparent access to remote (e.g. via https) as well as local access. Developers can register a file extension, e.g., `.loom` for dispatch from character-based URIs to specific `import()` / `export()` methods based on classes representing file types, e.g., `LoomFile()`.
+
+### Comentarios sobre los paquetes:
+
+Buscamos diversos paquetes entre los disponibles en bioconductor, de los cuales se descartaban los que no tenían las "pruebas" que de cierta forma pueden asegurar que podeos confiar en un paquete o no. Al final encontramos que los paquetes anteriormente descritos, en general tenían buen soporte, es decir, los 3 tenían sección abierta de preguntas (al menos en GitHub), reportaban que eran versiones estables en diversos SO (con la excepción de BiocIO que reportaba algunos Warnings en las versiones de Windows), tenían algunas citas en publicaciones y la documentación de las 3 eran bastante claras y con ejemplos muy bonitos. Personalmente, los que más llamaron mi atención fueron los dos primeros porque sirven para analizar datos de single-cell, que es algo que me gustaría aprender. El tercer paquete también lo incluimos porque nos parece interesante que también haya paquetes para manejar diferentes paquetes y formatos de bioconductor. Además, los 3 paquetes llevan menos de 6 meses en bioconductor, por lo cual es aceptable que dentro de bioconductor aún no haya preguntas (aunque igual como se dijo antes, algunos tienen preguntas abiertas y respondidas en repositorios de github)
