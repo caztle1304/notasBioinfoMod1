@@ -2,11 +2,20 @@ library("sessioninfo")
 library("here")
 library("ggplot2")
 
+## Crea proyecto
 
-## Hello wordl
+## usethis::create_project("~/notasBioinfoMod1")
+
+## Crea archivo startup
+
+## usethis::use_r("01-notas.R")
+
+
+
+## Hello world
 print("Soy Angel")
 
-## Crea diractorio para figuras
+## Crea directorio para figuras
 dir.create(here::here("figuras"), showWarnings = FALSE)
 
 pdf(here::here("figuras", "mtcars_gear_vs_mpg.pdf"), useDingbats = FALSE)
