@@ -89,14 +89,14 @@ iSEE::iSEE(sce_layer)
 Resultados: 
 
 
-![Resultado 1](../ReducedDimensionPlot1_pages-to-jpg-0001.jpg)
+![Resultado 1](../figuras/ReducedDimensionPlot1_pages-to-jpg-0001.jpg)
 
-![Resultado 2](../ComplexHeatmapPlot1_pages-to-jpg-0001.jpg)
+![Resultado 2](../figuras/ComplexHeatmapPlot1_pages-to-jpg-0001.jpg)
 
 ### Mejor vizualización del resultado 2:
 
 La siguiente visualización es de un screenshot que se tomó del despliegue gráfico, ya que al deescargar el PDF, el heatmap se ve muy pequeño 
 
-![Resultado 2](../plot.jpg)
+![Resultado 2](../figuras/plot.jpg)
 
 Se observa en el heatmap que MBP y MOBP son los que más se parecen/relacionan y MBP es el que más se está expresando en general, y en conjunto, los genes se expresan más en la capa WM (White matter)
