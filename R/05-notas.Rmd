@@ -1,0 +1,265 @@
+---
+title: "05-notas"
+author: "Angel Adrian De la Cruz Castillo"
+date: "25/2/2021"
+output: html_document
+---
+
+## Notas 
+
+### Regresión lineal
+
+Se asume la misma SD y una media de 0, se quiere obtener una pendiente de una línea recta que tenga la menor distancia posible a los puntos.
+
+### Sintaxis de model.matrix
+
+En la función se sigue la fórmula $Y = X1 + X2$$
+
+```{r, eval = FALSE}
+mat <- with(trees, model.matrix(log(Volume) ~ log(Height) + log(Girth)))
+
+## Se usa * en lugar de + cuando las dos variables pasadas a la función están relacionadas entre si
+
+## La tilde separa la Y de las X
+
+## Cuando no hay variable Y se pone la tilde ~ directamente
+
+## Un cero se agrega después de la tilde cuando no se quiere la variable intercept
+
+```
+
+Intercept es la ordenada al origen (el estado basal cuando X=0)
+
+
+### Script del ejercicio de clase con anotaciones
+
+```{r, eval = FALSE}
+library("recount3")
+
+human_projects <- available_projects()
+
+rse_gene_SRP045638 <- create_rse(
+  subset(
+    human_projects,
+    project == "SRP045638" & project_type == "data_sources"
+  )
+)
+
+assay(rse_gene_SRP045638, "counts") <- compute_read_counts(rse_gene_SRP045638)
+
+rse_gene_SRP045638$sra.sample_attributes[1:3]
+
+## Sale error porque hay información en unas muestras que en otras no
+rse_gene_SRP045638 <- expand_sra_attributes(rse_gene_SRP045638)
+
+
+## Se eliminan elementos que no son consistentes
+rse_gene_SRP045638$sra.sample_attributes <- gsub("dev_stage;;Fetal\\|", "", rse_gene_SRP045638$sra.sample_attributes)
+rse_gene_SRP045638$sra.sample_attributes[1:3]
+
+## Ahora sí corre
+rse_gene_SRP045638 <- expand_sra_attributes(rse_gene_SRP045638)
+
+## grepl busca todas las columnas que empiecen con X cadena, es como un regex
+colData(rse_gene_SRP045638)[
+  ,
+  grepl("^sra_attribute", colnames(colData(rse_gene_SRP045638)))
+]
+
+## Pasar de character a nuemric o factor
+rse_gene_SRP045638$sra_attribute.age <- as.numeric(rse_gene_SRP045638$sra_attribute.age)
+rse_gene_SRP045638$sra_attribute.disease <- factor(rse_gene_SRP045638$sra_attribute.disease)
+rse_gene_SRP045638$sra_attribute.RIN <- as.numeric(rse_gene_SRP045638$sra_attribute.RIN)
+rse_gene_SRP045638$sra_attribute.sex <- factor(rse_gene_SRP045638$sra_attribute.sex)
+
+## Resumen de las variables de interés
+summary(as.data.frame(colData(rse_gene_SRP045638)[
+  ,
+  grepl("^sra_attribute.[age|disease|RIN|sex]", colnames(colData(rse_gene_SRP045638)))
+]))
+
+
+## Encontraremos diferencias entre muestra prenatalas vs postnatales
+rse_gene_SRP045638$prenatal <- factor(ifelse(rse_gene_SRP045638$sra_attribute.age < 0, "prenatal", "postnatal"))
+table(rse_gene_SRP045638$prenatal)
+
+## http://research.libd.org/recount3-docs/docs/quality-check-fields.html
+rse_gene_SRP045638$assigned_gene_prop <- rse_gene_SRP045638$recount_qc.gene_fc_count_all.assigned / rse_gene_SRP045638$recount_qc.gene_fc_count_all.total
+summary(rse_gene_SRP045638$assigned_gene_prop)
+
+## Hm... veamos si hay una diferencia entre los grupos
+with(colData(rse_gene_SRP045638), tapply(assigned_gene_prop, prenatal, summary))
+
+## Guardemos nuestro objeto entero por si luego cambiamos de opinión
+rse_gene_SRP045638_unfiltered <- rse_gene_SRP045638
+
+## Eliminemos a muestras malas
+hist(rse_gene_SRP045638$assigned_gene_prop)
+
+table(rse_gene_SRP045638$assigned_gene_prop < 0.3)
+
+
+rse_gene_SRP045638 <- rse_gene_SRP045638[, rse_gene_SRP045638$assigned_gene_prop > 0.3]
+
+## Calculemos los niveles medios de expresión de los genes en nuestras
+## muestras.
+## Ojo: en un análisis real probablemente haríamos esto con los RPKMs o CPMs
+## en vez de las cuentas.
+gene_means <- rowMeans(assay(rse_gene_SRP045638, "counts"))
+summary(gene_means)
+
+## Eliminamos genes
+rse_gene_SRP045638 <- rse_gene_SRP045638[gene_means > 0.1, ]
+
+## Dimensiones finales
+dim(rse_gene_SRP045638)
+
+## Porcentaje de genes que retuvimos
+round(nrow(rse_gene_SRP045638) / nrow(rse_gene_SRP045638_unfiltered) * 100, 2)
+
+rse_gene_SRP045638$sra.sample_attributes <- gsub("dev_stage;;Fetal\\|", "", rse_gene_SRP045638$sra.sample_attributes)
+rse_gene_SRP045638$sra.sample_attributes[1:3]
+
+
+```
+
+
+## Ejercicio
+
+### Cargando paquetes y corriendo código necesario 
+```{r download_SRP045638, echo = FALSE, message = FALSE}
+library("recount3")
+human_projects <- available_projects()
+rse_gene_SRP045638 <- create_rse(
+    subset(
+        human_projects,
+        project == "SRP045638" & project_type == "data_sources"
+    )
+)
+assay(rse_gene_SRP045638, "counts") <- compute_read_counts(rse_gene_SRP045638)
+```
+
+
+
+
+```{r solve_issue, echo = FALSE}
+rse_gene_SRP045638$sra.sample_attributes <- gsub("dev_stage;;Fetal\\|", "", rse_gene_SRP045638$sra.sample_attributes)
+```
+
+
+
+```{r attributes, echo = FALSE}
+rse_gene_SRP045638 <- expand_sra_attributes(rse_gene_SRP045638)
+```
+
+
+
+```{r re_cast, echo = FALSE}
+## Pasar de character a nuemric o factor
+rse_gene_SRP045638$sra_attribute.age <- as.numeric(rse_gene_SRP045638$sra_attribute.age)
+rse_gene_SRP045638$sra_attribute.disease <- factor(rse_gene_SRP045638$sra_attribute.disease)
+rse_gene_SRP045638$sra_attribute.RIN <- as.numeric(rse_gene_SRP045638$sra_attribute.RIN)
+rse_gene_SRP045638$sra_attribute.sex <- factor(rse_gene_SRP045638$sra_attribute.sex)
+```
+
+
+```{r new_variables, echo = FALSE}
+## Encontraremos diferencias entre muestra prenatalas vs postnatales
+rse_gene_SRP045638$prenatal <- factor(ifelse(rse_gene_SRP045638$sra_attribute.age < 0, "prenatal", "postnatal"))
+rse_gene_SRP045638$assigned_gene_prop <- rse_gene_SRP045638$recount_qc.gene_fc_count_all.assigned / rse_gene_SRP045638$recount_qc.gene_fc_count_all.total
+```
+
+
+```{r filter_rse, echo = FALSE}
+## Guardemos nuestro objeto entero por si luego cambiamos de opinión
+rse_gene_SRP045638_unfiltered <- rse_gene_SRP045638
+rse_gene_SRP045638 <- rse_gene_SRP045638[, rse_gene_SRP045638$assigned_gene_prop > 0.3]
+## Calculemos los niveles medios de expresión de los genes en nuestras
+## muestras.
+## Ojo: en un análisis real probablemente haríamos esto con los RPKMs o CPMs
+## en vez de las cuentas.
+gene_means <- rowMeans(assay(rse_gene_SRP045638, "counts"))
+# Eliminamos genes
+rse_gene_SRP045638 <- rse_gene_SRP045638[gene_means > 0.1, ]
+```
+
+
+```{r normalize, echo = FALSE, message = FALSE}
+library("edgeR") # BiocManager::install("edgeR", update = FALSE)
+dge <- DGEList(
+    counts = assay(rse_gene_SRP045638, "counts"),
+    genes = rowData(rse_gene_SRP045638)
+)
+dge <- calcNormFactors(dge)
+```
+
+
+```{r statiscal_model, echo = FALSE}
+mod <- model.matrix(~ prenatal + sra_attribute.RIN + sra_attribute.sex + assigned_gene_prop,
+    data = colData(rse_gene_SRP045638)
+)
+```
+
+
+
+
+```{r run_limma, echo = FALSE}
+library("limma")
+vGene <- voom(dge, mod, plot = FALSE)
+eb_results <- eBayes(lmFit(vGene))
+de_results <- topTable(
+    eb_results,
+    coef = 2,
+    number = nrow(rse_gene_SRP045638),
+    sort.by = "none"
+)
+```
+
+### Visualizando genes de DE
+
+
+```{r pheatmap, message = FALSE}
+## Extraer valores de los genes de interés
+exprs_heatmap <- vGene$E[rank(de_results$adj.P.Val) <= 50, ]
+## Creemos una tabla con información de las muestras
+## y con nombres de columnas más amigables
+df <- as.data.frame(colData(rse_gene_SRP045638)[, c("prenatal", "sra_attribute.RIN", "sra_attribute.sex")])
+colnames(df) <- c("AgeGroup", "RIN", "Sex")
+## Hagamos un heatmap
+library("pheatmap")
+pheatmap(
+    exprs_heatmap,
+    cluster_rows = TRUE,
+    cluster_cols = TRUE,
+    show_rownames = FALSE,
+    show_colnames = FALSE,
+    annotation_col = df
+)
+```
+
+
+
+
+### Agreguen los nombres de los genes a nuestro `pheatmap`. 
+
+
+
+```{r}
+
+exprs_heatmap <- vGene$E[rank(de_results$adj.P.Val) <= 50, ]
+df <- as.data.frame(colData(rse_gene_SRP045638)[, c("prenatal", "sra_attribute.RIN", "sra_attribute.sex")])
+colnames(df) <- c("AgeGroup", "RIN", "Sex")
+our_match <- which(rowRanges(rse_gene_SRP045638)$gene_id %in% rownames(exprs_heatmap))
+
+rownames(exprs_heatmap) <- rowRanges(rse_gene_SRP045638)$gene_name[our_match ]
+
+pheatmap(
+    exprs_heatmap,
+    cluster_rows = TRUE,
+    cluster_cols = TRUE,
+    show_rownames = TRUE,
+    show_colnames = FALSE,
+    annotation_col = df
+)
+
+```
