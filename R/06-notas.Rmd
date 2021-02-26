@@ -1,0 +1,60 @@
+---
+title: "06-notas"
+author: "Angel Adrian De la Cruz Castillo"
+date: "26/2/2021"
+output: html_document
+---
+
+
+## Ejercicio
+Comentario: Revisar history para checar comandos para ver nombres de columnas, renglones, etc
+
+```{r, message = FALSE}
+speaqeasy_data <- file.path(tempdir(), "rse_speaqeasy.RData")
+download.file("https://github.com/LieberInstitute/SPEAQeasy-example/blob/master/rse_speaqeasy.RData?raw=true", speaqeasy_data, mode = "wb")
+library("SummarizedExperiment")
+load(speaqeasy_data, verbose = TRUE)
+
+```
+
+
+### ¿Hay diferencias en totalAssignedGene o mitoRate entre los grupos de diagnosis (PrimaryDx)?
+```{r}
+library("ggplot2")
+
+df <- data.frame(assigned = colData(rse_gene)$totalAssignedGene, mito = colData(rse_gene)$mitoRate, prim = colData(rse_gene)$PrimaryDx)
+
+ggplot(df, aes(x = prim, y = mito))+ geom_boxplot()
+
+ggplot(df, aes(x = prim, y = assigned))+ geom_boxplot()
+
+## Sí hay diferencia 
+
+```
+
+Grafica la expresión de SNAP25 para cada grupo de diagnosis.
+
+
+```{r}
+
+geneIndex <- which(rowRanges(rse_gene)$Symbol=="SNAP25")
+
+boxplot(assay(rse_gene)[geneIndex,]~as.vector(colData(rse_gene)$PrimaryDx), xlab = "Dx", ylab = "Expresión", main = "Expresion de SNAP25 según Dx")
+
+```
+
+Sugiere un modelo estadistico que podríamos usar en una análisis de expresión diferencial. Verifica que si sea un modelo full rank. ¿Cúal sería el o los coeficientes de interés?
+
+```{r}
+df2 <- data.frame(sex = colData(rse_gene)$Sex, prim = colData(rse_gene)$PrimaryDx)
+vd <- ExploreModelMatrix::VisualizeDesign(
+    sampleData = df2,
+    designFormula = ~ sex + prim,
+    textSizeFitted = 4
+    
+)
+
+## Veamos las imágenes
+cowplot::plot_grid(plotlist = vd$plotlist)
+
+```
