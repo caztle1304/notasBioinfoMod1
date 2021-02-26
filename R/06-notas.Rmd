@@ -58,3 +58,8 @@ vd <- ExploreModelMatrix::VisualizeDesign(
 cowplot::plot_grid(plotlist = vd$plotlist)
 
 ```
+
+Usando la funcion ExploreModelMatrix(), se modificó el grupo de referencia para que fuera un modelo full rank, quedando de la siguiente forma:
+
+![Resultado ](../figuras/modelo.jfif)
+
